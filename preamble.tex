@@ -1,0 +1,94 @@
+\documentclass[a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{siunitx,amsmath, epic, eepic, float, subfig, amsfonts, color, amsthm, textcomp, microtype, fullpage, csquotes}
+\usepackage[parfill]{parskip}
+\usepackage[pdftex]{graphicx}
+\graphicspath{{./assets/}}
+\usepackage[titletoc,title]{appendix}
+\usepackage{standalone}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pdfpages}
+\usepackage{lipsum,etoolbox}
+\pgfplotsset{compat=1.14}
+\usepackage{color}
+\definecolor{bluekeywords}{rgb}{0.13,0.13,1}
+\definecolor{greencomments}{rgb}{0,0.5,0}
+\definecolor{redstrings}{rgb}{0.9,0,0}
+\definecolor{light-gray}{gray}{0.95}
+\usepackage[font=small,format=plain,labelfont=bf,textfont=it]{caption}
+\usepackage[linkcolor=black,urlcolor=black,citecolor=black]{hyperref}
+\hypersetup{colorlinks=true}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\linespread{1.3}
+\usepackage{beramono}
+\usepackage{helvet}
+\usepackage{tabulary}
+\usepackage{longtable}
+\usepackage{tabu}
+\usepackage{todonotes}
+\tabulinesep=1.2mm
+\renewcommand*{\familydefault}{\sfdefault}
+\renewcommand\arraystretch{1.7}
+\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\usepackage{multirow}
+\usepackage{abstract}
+\usepackage[style=ieee,backend=biber,urldate=iso8601,date=iso8601]{biblatex}
+\renewbibmacro*{bbx:savehash}{}
+\addbibresource{references.bib}
+\renewcommand{\abstractnamefont}{\normalfont\large\bfseries}
+\makeatletter
+\newcommand{\tocfill}{\cleaders\hbox{$\m@th \mkern\@dotsep mu . \mkern\@dotsep mu$}\hfill}
+\makeatother
+\newcommand{\abbrlabel}[1]{\makebox[3cm][l]{\textbf{#1}\ \tocfill}}
+\newenvironment{abbreviations}{
+	\begin{list}{}{
+			\renewcommand{\makelabel}{\abbrlabel}
+			\setlength{\itemsep}{0pt}
+		}}{\end{list}
+}
+
+\usepackage{listings}
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, =>, return, null, catch, switch, var, let, const, if, in, while, do, else, case, break, async, await, then},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]",
+  morestring=[b]`
+}
+\lstset{frame=tb,
+  language=JavaScript,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{bluekeywords},
+  commentstyle=\color{greencomments},
+  stringstyle=\color{redstrings},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\usepackage{longtable}
+\usepackage[normalem]{ulem}
+\useunder{\uline}{\ul}{}
+
+\usepackage{titlesec}
+\titleformat{\chapter}
+{\normalfont\LARGE\bfseries}{\thechapter}{1em}{}
+\titlespacing*{\chapter}{0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}

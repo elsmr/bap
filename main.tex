@@ -1,0 +1,52 @@
+\input{preamble}
+
+\begin{document}
+
+% \include{titlepage}
+
+% \include{titlepage}
+
+\newpage\null\thispagestyle{empty}\newpage
+
+\includepdf{voorblad.pdf}
+
+\includepdf{gegevens.pdf}
+
+\include{chapters/abstract}
+
+\include{chapters/woord-vooraf}
+
+\setcounter{tocdepth}{2}
+\addcontentsline{toc}{chapter}{Contents}
+\tableofcontents
+
+\include{chapters/lijst-afkortingen}
+
+\newpage
+
+% main content
+\include{chapters/voorstelling}
+\include{chapters/opdracht}
+\include{chapters/actieplan}
+\include{chapters/voorstudie}
+\include{chapters/uitwerking}
+\include{chapters/besluit}
+% end main content
+
+\newpage
+
+% references
+\addcontentsline{toc}{chapter}{References}
+\printbibliography[title={References},keyword={ref}]
+% end references
+
+\newpage
+
+% bib
+\addcontentsline{toc}{chapter}{Bibliography}
+\printbibliography[keyword={bib}]
+% end bibliography
+
+% \include{chapters/bijlagen}
+
+\end{document}
