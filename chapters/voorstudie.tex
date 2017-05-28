@@ -1,19 +1,19 @@
 \chapter{Research question}
 
-In this bachelor thesis research will be conducted on how functional reactive programming can be beneficial to development of real-time web applications. The research question that will be answered is the following: "Can functional reactive programming be used to make developing real-time web applications more efficient?".
+In this bachelor thesis research is conducted on how functional reactive programming can be beneficial to development of real-time web applications. The research question that is answered is the following: "What advantages and disadvantages does functional reactive programming have when developing real-time web applications?".
+
+\section{Approach}
+
+The first part of this bachelor thesis researches FRP and real-time dataflow on the web today. Because this bachelor thesis is applied to the web all code examples are written in JavaScript.
+
+To come to a conclusion a practical case study is made. The research question is evaluated by implementing a simple case in a traditional imperative programming style and in a declarative FRP style. The metrics defined in section \ref{sec:metrics} will then be used to compare the two implementations and formulate a conclusion.
+
+The case that is implemented in this bachelor thesis is a simple text-based chat application. This is the simplest example of a real-time web application with full-duplex communication.
 
 \section{Metrics}
 \label{sec:metrics}
 
-The metrics that will be used to assess whether the use of FRP is beneficial to real-time web application development are the following: Amount of code, readability, learning curve, performance and extensibility.
-
-\section{Approach}
-
-The first part of this bachelor thesis will research FRP and real-time dataflow on the web today. Because this bachelor thesis is applied to the web all code examples will be in JavaScript.
-
-To come to a conclusion a practical case study will be conducted. The research question will be evaluated by implementing a simple case in a traditional imperative style and in a declarative FRP style. The metrics defined in section \ref{sec:metrics} will then be used to compare the two implementations and formulate a conclusion.
-
-The case that will be implemented in this bachelor thesis will be a simple text-based chat application. This is the simplest example of a real-time application with full-duplex communication. To measure extensibility a feature will be added to the finished application and the degree of difficulty will be assessed.
+First static analysis is performed on the source code of both implementations. Metrics that result from this analysis such as bundle size and complexity metrics are then used to compare the implementations. After that the runtime performance of both implementations is compared in two scenarios. Finally there is a comparison based on the readability of the source code.
 
 \chapter{Real-time on the web} % (fold)
 \label{sec:realtime}
@@ -21,12 +21,12 @@ The case that will be implemented in this bachelor thesis will be a simple text-
 \section{HTTP Polling} % (fold)
 \label{sub:polling}
 
-The simplest way to do real-time on the web is to poll a server via Ajax at a certain interval. This is a simple but very primitive way to update data in real-time. This technique has multiple downsides. Firstly the communication is not really real-time and your data will always be out of date because of the usage of an interval. Secondly this technique also increases load on your server because it has to handle a lot of requests from the clients. This makes scaling with a HTTP polling architecture very cumbersome \cite{poll-socket}. Lastly this technique cannot do two-way communication between server and client so this it is not suitable for real-time communication \cite{poll-socket}.
+The simplest way to do real-time on the web is to poll a server via Ajax at a certain interval. This is a simple but very primitive way to update data in real-time. This technique has multiple downsides. Firstly the communication is not really real-time and your data is always out of date because of the usage of an interval. Secondly this technique increases load on your server because it has to handle a lot of requests from the clients. This makes scaling with an HTTP polling architecture very cumbersome \cite{poll-socket}. Lastly this technique cannot do two-way communication between server and client so it is not suitable for real-time communication \cite{poll-socket}.
 
 \section{HTTP long polling} % (fold)
 \label{sub:long-polling}
 
-HTTP long polling is a variation on HTTP polling. The client will still poll the server for new data but the server will keep the request open until it has new data. After the client gets a response it will immediately send a new request, repeating the process \cite{long-poll} (see figure~\ref{figure:long-poll}). This technique resolves most downsides of classic HTTP polling but it still cannot facilitate two-way communication between server and client \cite{poll-socket}.
+HTTP long polling is a variation on HTTP polling. The client still polls the server for new data but the server keeps the request open until it has new data. After the client gets a response it immediately sends a new request, repeating the process \cite{long-poll} (see figure~\ref{figure:long-poll}). This technique resolves most downsides of classic HTTP polling but it still cannot facilitate two-way communication between server and client \cite{poll-socket}.
 
 \begin{figure}[H]
 	\centering
@@ -38,7 +38,7 @@ HTTP long polling is a variation on HTTP polling. The client will still poll the
 \section{WebSockets} % (fold)
 \label{sub:websockets}
 
-HTML5 WebSockets are a full-duplex communication channel (see figure~\ref{figure:socket}) that operates through a single socket over the web. HTML5 WebSockets is not just another small improvement over conventional HTTP communications \cite{poll-socket}, it is a completely new communication protocol. Under the hood WebSockets are built on TCP; they do not use HTTP except for establishing the connection \cite{socket-wiki}. Browser support for WebSockets is excellent, all major browsers support them \cite{socket-browser}.
+HTML5 WebSockets are a full-duplex communication channel (see figure~\ref{figure:socket}) that operates through a single socket over the web. HTML5 WebSockets are not just another small improvement over conventional HTTP communications \cite{poll-socket}, it is a completely new communication protocol. Under the hood WebSockets are built on TCP; they do not use HTTP except for establishing the connection \cite{socket-wiki}. Browser support for WebSockets is excellent, all major browsers support them \cite{socket-browser}.
 
 
 \begin{figure}[H]
@@ -56,7 +56,7 @@ There are many libraries that abstract away some of the complexity from the WebS
 \section{WebRTC} % (fold)
 \label{sub:webrtc}
 
-WebRTC is full-duplex communication protocol developed and open sourced by Google in 2010 \cite{webrtc-intro}. After that WebRTC was standardised by the IETF and the W3C \cite{webrtc-intro}. Now there are implemented open standards for real-time, plugin-free video, audio and data communication. WebRTC allows real-time peer-to-peer communication of audio, video and arbitrary data between browsers. A server is only needed to set up the initial connection between peers, this process is called signaling \cite{webrtc} (see figure~\ref{figure:signal}).
+WebRTC is a full-duplex communication protocol that was developed and open sourced by Google in 2010 \cite{webrtc-intro}. After that WebRTC was standardised by the IETF and the W3C \cite{webrtc-intro}. Now there are implemented open standards for real-time, plugin-free video, audio and data communication. WebRTC allows real-time peer-to-peer communication of audio, video and arbitrary data between browsers. A server is only needed to set up the initial connection between peers, this process is called signaling \cite{webrtc} (see figure~\ref{figure:signal}).
 
 \begin{figure}[H]
 	\centering
@@ -70,7 +70,7 @@ WebRTC's P2P connection model further increases scalability and simplicity of re
 \chapter{Functional reactive programming} % (fold)
 \label{sub:frp}
 
-FRP is a programming paradigm that integrates the idea of asynchronous dataflows into functional programming. This provides an elegant way to express computation for areas that involve a lot of time related variables such as animation and user interface rendering \cite{frp-wiki}\cite{frp-haskell}. 
+Functional reactive programming is a programming paradigm that integrates the idea of asynchronous dataflows into functional programming. This provides an elegant way to express computation for areas that involve a lot of time related variables such as animation and user interface rendering \cite{frp-wiki}\cite{frp-haskell}. 
 
 \section{Functional programming} % (fold)
 \label{sub:fp}
@@ -81,7 +81,7 @@ Functional programming has its origins in lambda calculus, a system in mathemati
 
 \subsection{Declarative programming}
 
-In declarative programming a program describes what to do, rather than how to do it. This is the opposite of classic imperative programming \cite{intro-func}. The difference between the two is best explained by example. Listing~\ref{listing:imp} and listing~\ref{listing:dec} both show an implementation of a function called \code{double}. The function takes an array and returns another array with all elements doubled. Listing~\ref{listing:imp} shows an imperative implementation of this function, the function explicitly says to loop over the elements, double them and add them to an empty array. Listing~\ref{listing:dec} shows a declarative implementation of this function, it only says what we want to happen to the elements in the array.
+In declarative programming a program describes what to do, rather than how to do it. This is the opposite of traditional imperative programming \cite{intro-func}. The difference between the two is best explained by example. Listing~\ref{listing:imp} and listing~\ref{listing:dec} both show an implementation of a function called \code{double()}. The function takes an array and returns another array with all elements doubled. Listing~\ref{listing:imp} shows an imperative implementation of this function, the function explicitly says to loop over the elements, double them and add them to an empty array. Listing~\ref{listing:dec} shows a declarative implementation of this function, it only says what we want to happen to the elements in the array.
 
 \begin{lstlisting}[caption=Imperative implementation of the double function,label=listing:imp]
 function double (arr) {
@@ -106,14 +106,14 @@ In functional programming functions are first-class citizens. This means that fu
 
 \subsubsection{Pure functions}
 
-Pure functions have two defining characteristics. The first is that the function's result only depends on its arguments, given the same arguments the function will always return the same value \cite{intro-func}. The second characteristic is that pure functions do not cause any side effects such as mutations to data structures or output to I/O devices \cite{intro-func}.
+Pure functions have two defining characteristics. The first is that the function's result only depends on its arguments, given the same arguments the function always returns the same value \cite{intro-func}. The second characteristic is that pure functions do not cause any side effects such as mutations to data structures or output to I/O devices \cite{intro-func}.
 
 \subsubsection{Higher order functions} % (fold)
 \label{sub:fp-order}
 
-Higher order functions are functions that either take a function as an argument, return a function or both. This is a simple concept that makes function composition possible. Function composition helps keeping functional programs readable and easy to reason about \cite{intro-func}.
+Higher order functions are functions that either take a function as an argument, return a function or both. This is a simple concept that makes function composition possible. Function composition helps to keep functional programs readable and easy to reason about \cite{intro-func}.
 
-An example of a higher order function in JavaScript is the \code{map} function of the Array prototype (see listing~\ref{listing:dec}). This function takes a function as an argument. The invokeTwice function in listing~\ref{listing:ho} is an example of a higher-order function that returns a function.
+An example of a higher order function in JavaScript is the \code{map()} function of the Array prototype (see listing~\ref{listing:dec}). This function takes another function as its argument. The \code{invokeTwice()} function in listing~\ref{listing:ho} is an example of a higher order function that returns a function.
 
 \begin{lstlisting}[caption=Higher order function composition,label=listing:ho]
 const invokeTwice = f => subject => f(f(subject));
@@ -124,11 +124,11 @@ quad(10); // 40
 invokeTwice(double)(10); // 40
 \end{lstlisting}
 
-The \code{invokeTwice} function will take a function as an argument and return a function that applies the first function twice on its argument. The example also shows how \code{invokeTwice} can be composed together with other functions such as \code{double}. A function like \code{invokeTwice} that takes one argument at a time and returns a function taking the next argument is called a curried function. \cite{func-js}.
+The \code{invokeTwice()} function takes a function as an argument and returns a function that applies the first function twice on its argument. The example also shows how \code{invokeTwice()} can be composed together with other functions such as \code{double}. A function like \code{invokeTwice()} that takes one argument at a time and returns a function taking the next argument is called a curried function. \cite{func-js}.
 
 \subsection{Immutability}
 
-Functional programming promotes the use of immutable data structures, most functional languages even enforce it \cite{func-js}. Immutability means that a data structure cannot be changed. If an operation is done on an immutable object it copies the value, mutates it and returns it as a new object. This helps eliminate bugs where an object enters a state that was not predicted by the programmer \cite{intro-func}.
+Functional programming promotes the use of immutable data structures, most functional languages even enforce it \cite{func-js}. Immutability means that a data structure cannot be changed. If an operation is done on an immutable object, it copies the value, mutates it and returns it as a new object. This helps eliminate bugs where an object enters a state that was not predicted by the programmer \cite{intro-func}.
 
 \subsection{Other functional jargon}
 
@@ -137,9 +137,9 @@ There are many other terms associated with functional programming but these are 
 \section{Reactive programming}
 \label{sub:rp}
 
-Reactive programming is a programming paradigm that deals with asynchronous data streams \cite{intro-reactive}. These data streams will then propagate their changes to other parts of the application; this is the observer pattern \cite{observer}. Reactive programming has three main objects: an observable or a stream, an observer or subscriber and a scheduler \cite{intro-reactive}.
+Reactive programming is a programming paradigm that deals with asynchronous data streams \cite{intro-reactive}. These data streams then propagate their changes to other parts of the application; this is the observer pattern \cite{observer}. Reactive programming has three main objects: an observable or a stream, an observer or a subscriber and a scheduler \cite{intro-reactive}.
 
-An observable will emit values over time. An observable can be infinite or it can complete after a certain number of emitted values. Observers can subscribe to these streams and get notified whenever the observable emits a value, throws an error or completes (see listing~\ref{listing:observer} for an example). Schedulers decide on which thread an observer's code should run and when.
+An observable emits values over time. An observable can be infinite or it can complete after a certain number of emitted values. Observers can subscribe to these streams and get notified whenever the observable emits a value, throws an error or completes (see listing~\ref{listing:observer} for an example). Schedulers decide on which thread an observer's code should run and when.
 
 \begin{lstlisting}[caption=An observable and observer in RxJS,label=listing:observer]
 const someObservable$ = Observable.from([1,2,3]);
@@ -156,20 +156,20 @@ someObservable$
 
 \subsection{Operators}
 
-Typically a FRP library or language includes a lot of operators \cite{intro-reactive} so that observables can be easily manipulated. In FRP operators are pure functions that take an observable and return another observable. A simple example of an operator is the delay operator. This operator is available in RxJS and returns the input observable with every value delayed by a specified amount of time \cite{delay} (see figure~\ref{figure:delay}). Because operators return a new observable, operators can be easily chained after one another.
+Typically an FRP library or language includes a lot of operators \cite{intro-reactive} so that observables can be easily manipulated. In FRP operators are pure functions that take an observable and return another observable. A simple example of an operator is the delay operator. This operator is available in RxJS and returns the input observable with every value delayed by a specified amount of time \cite{delay} (see figure~\ref{figure:delay}). Because operators return a new observable, operators can be easily chained after one another.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=\textwidth]{delay}
+	\includegraphics[width=0.7\textwidth]{delay}
 	\caption{The delay operator in RxJS: marble diagram \cite{delay}}
 	\label{figure:delay}
 \end{figure}
 
-An example of operators on a data stream can be seen in figure~\ref{figure:stream}, this example illustrates a stream of clicks by a user. The events in the stream are first grouped by throttling them for 250ms. Afterwards they are mapped to the length of the groups and finally they are filtered so that only groups of clicks equal or larger than 2 remain. This example shows really well how reactive programming helps with handling asynchronism and concurrency in modern applications.
+An example of operators on a data stream can be seen in figure~\ref{figure:stream}, this example illustrates a stream of clicks by a user. The events in the stream are first grouped by throttling them for 250ms. Afterwards they are mapped to the length of the groups and finally they are filtered so that only groups of clicks equal or larger than 2 remain. This example shows really well how reactive programming helps with handling complex operations on events in modern applications.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.7\textwidth]{stream}
+	\includegraphics[width=0.5\textwidth]{stream}
 	\caption{Stream of clicks \cite{intro-reactive}}
 	\label{figure:stream}
 \end{figure}
@@ -182,9 +182,9 @@ Marble diagrams are the main tool that is used today to visualize observables. T
 
 \subsection{Debugging}
 
-The main area where reactive programming falls short today is debugging. Since operators tend to be one line arrow functions it is not possible to set a breakpoint inside them. This results in a lot of developers either using console statements or having to convert operator functions to functions with a body every time they want to debug. Moreover stack traces tend to be longer and less useful than those from imperative programming. Because everything is asynchronous and a lot of work is done internally in the FRP library, stack traces tend to show only the errors internal to the library which is not useful for the developer \cite{debug}. An important sidenote is that Paul Irish announced new features coming to Chrome Devtools during Google I/O 2017 that will allow developers to debug asynchronous code more efficiently \cite{devtools}. Stack traces will become more descriptive and developers will be able to step inside one line arrow functions such as \code{Promise.then()} \cite{devtools}.
+The main area where reactive programming falls short today is debugging. Since operators tend to be one line arrow functions it is not possible to set a breakpoint inside them. This results in a lot of developers either using console statements or having to convert operator functions to functions with a body every time they want to debug. Moreover stack traces tend to be longer and less useful than those from imperative programming. Because everything is asynchronous and a lot of work is done internally in the FRP library, stack traces tend to show only the errors internal to the library which is not useful for the developer \cite{debug}. An important side note is that Paul Irish announced new features coming to Chrome Devtools during Google I/O 2017 that will allow developers to debug asynchronous code more efficiently \cite{devtools}. Stack traces will become more descriptive and developers will be able to step inside one line arrow functions such as \code{Promise.then()} \cite{devtools}.
 
-RxJS 5 is a complete rewrite of RxJS 4 and one of it's biggest improvements is its shorter stack traces making it easier for developers to debug their code \cite{debug}. Other tools one can use to debug and reason about reactive code are marble diagrams and dependency graphs \cite{debug}. Marble diagrams let developers visualize observables and find mistakes in their reasoning. Dependency graphs will help the developer understand what observables your current observable depends on and for what. This helps identify problems where an observable the current observable depends on is not behaving the way the developer expects it to. An example of a dependency graph is shown in figure~\ref{figure:depgraph}.
+RxJS 5 is a complete rewrite of RxJS 4 and one of its biggest improvements is its shorter stack traces making it easier for developers to debug their code \cite{debug}. Other tools one can use to debug and reason about reactive code are marble diagrams and dependency graphs \cite{debug}. Marble diagrams let developers visualize observables and find mistakes in their reasoning. Dependency graphs help the developer understand what observables an observable depends on and for what. This helps identify problems where an observable the current observable depends on is not behaving the way the developer expects it to. An example of a dependency graph is shown in figure~\ref{figure:depgraph}.
 
 \begin{figure}[H]
 	\centering
@@ -193,7 +193,7 @@ RxJS 5 is a complete rewrite of RxJS 4 and one of it's biggest improvements is i
 	\label{figure:depgraph}
 \end{figure}
 
-The figure above shows the dependency graph of a simple Body Mass Index (BMI) calculator. The code associated with this example can be seen in listing~\ref{listing:bmi}. The code example assumes that the input streams \code{name\$}, \code{weigth\$} and \code{height\$} are already instantiated before this code runs. 
+Figure~\ref{figure:depgraph} above shows the dependency graph of a simple Body Mass Index (BMI) calculator. The code associated with this example can be seen in listing~\ref{listing:bmi}. The code example assumes that the input streams \code{name\$}, \code{weigth\$} and \code{height\$} are already instantiated before this code runs. 
 
 \begin{lstlisting}[caption=Reactive BMI calculator source code \cite{debug},label=listing:bmi]
 const shortLowerCaseName$ = name$
@@ -211,7 +211,7 @@ const fullInfo$ = shortLowerCaseName$.combineLatest(bmi$);
 
 \subsection{Hot and cold observables}
 
-Observables can be either hot or cold. The way the producer is linked with the observable defines whether it is hot or cold. A producer is an object that provides values to an observable. The producer can be an iterator, an event of a DOM element, a WebSocket etc. The pseudocode in listing~\ref{listing:hot} shows how a producer is linked up to an observable for hot and cold observables.
+Observables can be either hot or cold. The way the producer is linked with the observable defines whether it is hot or cold. A producer is an object that provides values to an observable. The producer can be an iterator, an event, a WebSocket etc. The pseudocode in listing~\ref{listing:hot} shows how a producer is linked up to an observable for hot and cold observables.
 
 \begin{lstlisting}[caption=Hot and cold observables in RxJS \cite{hot},label=listing:hot]
 // Cold observable
@@ -227,9 +227,9 @@ const hot = new Observable((observer) => {
 });
 \end{lstlisting}
 
-When creating a cold observable a producer is made for each observer. This means that if there is no observer subscribed there is also no producer being instantiated. This is the reason why observables in RxJS need to be subscribed to in order to emit anything at all. Cold observables are unicast \cite{hot}. This means that every producer will only emit its data to one observer. As a result this can cause issues when working with very rapidly changing data such as time. Because every observer has its own producer, the time at which observers receive the same data can differ \cite{hot}.
+When creating a cold observable a producer is made for each observer. This means that if there is no observer subscribed there is also no producer being instantiated. This is the reason why observables in RxJS need to be subscribed to in order to emit anything at all. Cold observables are unicast \cite{hot}. This means that every producer only emits its data to one observer. As a result this can cause issues when working with very rapidly changing data such as time. Because every observer has its own producer, the time at which observers receive the same data can differ slightly \cite{hot}.
 
-For a hot observable the producer is set up even if no observer is subscribed to it. When multiple observers subscribe to the same observable the producer will be shared. Emitted data from the producer will be multicast to all observers \cite{hot}. In most FRP libraries including RxJS observables are cold by default. Observables in RxJS can be made hot with the publish and share operators \cite{hot}, subjects (see section~\ref{subjects}) are always hot.
+For a hot observable the producer is set up even if no observer is subscribed to it. When multiple observers subscribe to the same observable the producer is shared. Emitted data from the producer is multicasted to all observers \cite{hot}. In most FRP libraries including RxJS, observables are cold by default. Observables in RxJS can be made hot with the publish and share operators \cite{hot}, subjects (see section~\ref{subjects}) are always hot.
 
 \subsection{Subjects} \label{subjects}
 
@@ -243,13 +243,13 @@ Because of these characteristics JavaScript is an excellent language for functio
 
 \subsection{Asynchronous Javascript}
 
-Dealing with asynchronism has always been one of the biggest challenges of programming for the web. Over the years developers have employed different techniques to handle asynchronous code in JavaScript.
+Dealing with asynchronous code has always been one of the biggest challenges of programming for the web. Over the years developers have employed different techniques to handle asynchronous code in JavaScript.
 
 \subsubsection{Callbacks}
 
-Callbacks are the simplest way to handle asynchronism in JavaScript. The principle is simple; a callback function is passed as an argument with another function. That function will then call the callback function when it finishes its work.
+Callbacks are the simplest way to handle asynchronous code in JavaScript. The principle is simple; a callback function is passed as an argument with another function. That function will then call the callback function when it finishes its work.
 
-The problem with callbacks is that they quickly become unreadable when the programmer needs to compose different asynchronous actions. Listing~\ref{listing:cb} is an example of 3 asynchronous functions running one after the other. This example code is already pretty complex even though is accomplishes a very simple task.
+The problem with callbacks is that they quickly become unreadable when the programmer needs to compose different asynchronous actions. Listing~\ref{listing:cb} is an example of 3 asynchronous functions running one after the other. This example code is already pretty complex even though it accomplishes a very simple task.
 
 \begin{lstlisting}[caption=Fetching data  with nested callbacks,label=listing:cb,float]
 getData(function (err, x) {
@@ -277,7 +277,7 @@ getData(function (err, x) {
 
 Promises are an alternative way to handle asynchronous code. Promises were standardized in ES2015 but have been around for years in various libraries such as Bluebird \cite{promise}. The Promise API allows the developer to compose asynchronous code in a more declarative manner. A promise can either resolve and deliver a value or reject and throw an error.
 
-Listing~\ref{listing:promise} shows the example of listing~\ref{listing:cb} rewritten with the JavaScript Promise API. The \code{Promise.catch()} function will handle all errors on a chain of promises.
+Listing~\ref{listing:promise} shows the example of listing~\ref{listing:cb} rewritten with the JavaScript Promise API. The \code{Promise.catch()} function handles all errors on a chain of promises.
 
 \begin{lstlisting}[caption=Fetching data with the Promise API,label=listing:promise]
 getDataPromise
@@ -289,11 +289,11 @@ getDataPromise
 	});
 \end{lstlisting}
 
-If the promises in the example would not depend on the result of the previous one the \code{Promise.all()} function could be used. This function will complete when all promises have resolved. The \code{Promise.all()} function will throw an error if one of the promises rejects \cite{prom-all}.
+If the promises in the example would not depend on the result of the previous one the \code{Promise.all()} function could be used. This function completes when all promises have resolved. The \code{Promise.all()} function throws an error if one of the promises rejects \cite{prom-all}.
 
 \subsubsection{Async/await}
 
-Async functions and the async/await syntax was recently introduced to JavaScript in ES2017 \cite{async-await}. It is a new language construct to handle asynchronous code. The await operator will block code execution until an async function has completed. The example used in listing~\ref{listing:cb} and listing~\ref{listing:promise} is rewritten below in listing~\ref{listing:await} using the async/await syntax. 
+Async functions and the async/await syntax was recently introduced to JavaScript in ES2017 \cite{async-await}. It is a new language construct to handle asynchronous code. The await keyword blocks code execution until an async function has completed. The example used in listing~\ref{listing:cb} and listing~\ref{listing:promise} is rewritten below in listing~\ref{listing:await} using the async/await syntax. 
 
 \begin{lstlisting}[caption=Fetching data with the async/await keywords,label=listing:await]
 async function getAllData() {
@@ -312,7 +312,7 @@ async function getAllData() {
 
 FRP provides a more versatile API to handle asynchronous code than Promises and async/await. As Akash Agrawal correctly notes in his article "What Promises Do That Observables Can’t" observables completely overshadow promises in terms of functionality \cite{observables-promises}.
 
-Listing~\ref{listing:observable-getdata} shows the example from the listings in the previous paragraphs rewritten using RxJS observables. The \code{getMoreDataObservable} and \code{getOtherObservable} function in this example return an observable based on their parameter. While the implementations with promises and async/await are slightly more concise FRP offers a lot more functionality than both. RxJS observables for example provide operators to cancel, buffer and debounce asynchronous code \cite{rxjs-ben}. Promises or async/await provide no API for those functionalities.
+Listing~\ref{listing:observable-getdata} shows the example from the listings in the previous paragraphs rewritten using RxJS observables. The \code{getMoreDataObservable()} and \code{getOtherObservable()} functions in this example return an observable based on their parameter. While the implementations with promises and async/await are slightly more concise, FRP offers a lot more functionality than both. RxJS observables for example provide operators to cancel, buffer and debounce asynchronous code \cite{rxjs-ben}. Promises or async/await provide no API for those functionalities.
 
 \begin{lstlisting}[caption=Fetching data with FRP (RxJS),label=listing:observable-getdata]
 dataObservable$

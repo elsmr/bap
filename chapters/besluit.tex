@@ -1,3 +1,18 @@
 \chapter*{Conclusion} % (fold)
 \addcontentsline{toc}{chapter}{Conclusion}
 \label{sec:besluit}
+
+As the web as a platform is transitioning more towards applications instead of documents JavaScript usage is climbing. This trend makes the core challenges of working with JavaScript to make applications more prominent. One of the biggest challenges is managing asynchronous code in JavaScript. Callbacks are the most basic technique to manage asynchronous code but they are hard to compose and quickly result in unreadable code and bad practices. Promises and async/await are big improvements but they still lack an advanced API to compose and mutate asynchronous data. Functional reactive programming is a programming paradigm that solves this challenge by implementing the concept of asynchronous data streams.
+
+As the results of the case study indicate functional reactive programming has a significant positive impact on complexity, readability and maintainability of an application. Especially in real-time applications data streams are an excellent concept to handle real-time data in an efficient manner. The JavaScript API uses event handlers with callback functions. The problem with those is that they can not be combined and composed like streams can. They have to store state in mutable variables to communicate. This works for a small application but quickly becomes unmanageable and hard to read.
+
+The functional reactive programming paradigm also introduces a new way to think about application architecture. Applications can be seen as a pipeline of data. Developers declare how the data flows through the pipes and how it is changed along the way. This declarative approach to application development decreases the number of imperative statements. As a result readability and maintainability of the application is increased.
+
+Functional reactive programming as a paradigm brings some challenges with it however. Even though library documentation and introductions to FRP have become better, learning to think reactive is still time consuming. This can be a challenge since application development today is mostly done in teams. Getting an entire team to be confident in programming with FRP can be hard and might not be worth the effort for smaller applications.
+
+Since JavaScript does not provide a data structure for streams in the core language, developers still need to rely on libraries at the time of writing. As any library or layer of abstraction would, this heavily increases the size of the JavaScript bundle served to users. This can be an important argument not to use functional reactive programming as more people in developing countries gain access to the web. This extra layer of abstraction also causes decreased performance on runtime. However the results from the case study show us that this hit in performance is not very large.
+
+\clearpage
+
+Functional reactive programming is a great abstraction for any application that deals with a large number of asynchronous events. Since applications that use data from real-time sources such as WebSockets are inherently heavy on events, modeling them as streams using FRP can be a big advantage. It remains important to know the application's users and define the priorities. If a web application is targeted towards a demographic with poor connectivity or if performance is a priority it might not be a good decision to adopt functional reactive programming. For most applications though optimizing for readability and maintainability first is advised. It might even result in better performance as the size and complexity of the application increase.
+

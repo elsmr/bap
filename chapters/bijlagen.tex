@@ -1,14 +1,532 @@
-% !TEX root = ./main.tex
-
-\section*{Bijlagen} % (fold)
-\addcontentsline{toc}{section}{Bijlagen}
-\label{sec:een-titel}
-
-\appendix
-
-\renewcommand{\thesubsection}{\Alph{subsection}}
-
-\subsection{Een bijlage} % (fold)
-\label{sub:nog-een-titel}
-
-\lipsum[1]
+\begin{appendices}
+	\chapter{FRP frontend application logic}
+	\label{appendix:frp}
+	
+	\begin{lstlisting}[numbers=left]
+	import { Observable } from 'rxjs/Observable';
+	import 'rxjs/add/observable/dom/webSocket';
+	import 'rxjs/add/observable/combineLatest';
+	import 'rxjs/add/operator/do';
+	import 'rxjs/add/operator/map';
+	import 'rxjs/add/operator/scan';
+	import 'rxjs/add/operator/withLatestFrom';
+	import 'rxjs/add/operator/debounceTime';
+	import 'rxjs/add/operator/startWith';
+	import { html } from 'snabbdom-jsx';
+	
+	export function App ({ DOM, ws }) {
+		const wsMessages$ = ws.scan((acc, m) => [...acc, m], []);
+		const formSubmit$ = DOM.select('#form').events('submit').do(e => e.preventDefault());
+		const senderInput$ = DOM.select('#sender').events('input').map(e => e.target.value);
+		const messageInput$ = DOM.select('#message').events('input').map(e => e.target.value);
+		const formMessage$ = Observable.combineLatest(senderInput$, messageInput$)
+			.map(([sender, message]) => ({ sender, message }));
+		
+		const sendMessage$ = formSubmit$
+			.debounceTime(200)
+			.withLatestFrom(formMessage$, (event, message) => JSON.stringify(message));
+		const vtree$ = Observable
+			.combineLatest(wsMessages$.startWith([]), senderInput$.startWith(''))
+			.map(([messages, me]) =>
+				<div className="wrapper">
+					<ul className="chat">
+					{ messages &&
+					messages.map(m =>
+						<li className={`chat__entry ${me === m.sender && 'chat__entry--mine'}`}>
+							<img
+							className="chat__entry__avatar"
+							src={`https://api.adorable.io/avatars/32/${m.sender}.svg`}
+							title={m.sender}
+							alt={m.sender}
+							/>
+							<span className="chat__entry__message">{m.message}</span>
+						</li>
+					)}
+					</ul>
+					<div className="form__container">
+						<form id="form" action="">
+							<div className="form__inputs">
+								<input className="form__input" id="sender" type="text" placeholder="Your name"/>
+								<input className="form__input" id="message" type="text" placeholder="Type a message..." />
+							</div>
+							<div className="form__submit">
+								<input className="button" type="submit" id="button__send" value="Send" />
+							</div>
+						</form>
+					</div>
+				</div>
+			);
+		
+		return { DOM: vtree$, ws: sendMessage$ };
+	}
+	
+	\end{lstlisting}
+	
+	\chapter{Imperative frontend application logic}
+	\label{appendix:imp}
+	
+	\begin{lstlisting}[numbers=left]
+	import $ from 'jquery';
+	import Handlebars from 'handlebars';
+	import debounce from 'lodash.debounce';
+	
+	Handlebars.registerHelper('equal', (val1, val2, options) => {
+		val1 === val2 ? options.fn(this) : options.inverse(this);
+	});
+	
+	$(document).ready(() => {
+		const template = Handlebars.compile(`
+			<div class="wrapper">
+				<ul class="chat">
+					{{#each messages}}
+					{{#if this.isMine}}
+					<li class="chat__entry chat__entry--mine">
+						<span class="chat__entry__message">{{this.message}}</span>
+					</li>
+					{{else}}
+					<li class="chat__entry">
+						<img
+						class="chat__entry__avatar"
+						src="https://api.adorable.io/avatars/32/{{this.sender}}.svg"
+						title="{{this.sender}}"
+						alt="{{this.sender}}"
+						/>
+						<span class="chat__entry__message">{{this.message}}</span>
+					</li>
+					{{/if}}
+					{{/each}}
+				</ul>
+				<div class="form__container">
+					<form id="form">
+						<div class="form__inputs">
+							<input class="form__input" id="sender" type="text" placeholder="Your name" />
+							<input class="form__input" id="message" type="text" value="{{lastMessage}}" placeholder="Type a message..." />
+						</div>
+						<div class="form__submit">
+							<input class="button" type="submit" id="button__send" value="Send" />
+						</div>
+					</form>
+				</div>
+			</div>
+		`);
+		const messageWebsocket = new WebSocket('ws://localhost:8001');
+		const messages = [];
+		let lastMessage = '';
+		let me = '';
+		
+		const render = () => {
+			for (let i = 0; i < messages.length; i++) {
+				const message = messages[i];
+				message.isMine = message.sender === me;
+			}
+			const data = { messages, me, lastMessage };
+			const htmlString = template(data);
+			$('#app').html(htmlString);
+			$('#sender').focus().val(me);
+		};
+		
+		render();
+		
+		$('#app').on('submit', '#form', (event) => {
+			event.preventDefault();
+			debounce(() => {
+				const message = $('#message').val();
+				const sender = $('#sender').val();
+				
+				if (message.trim().length > 0 && sender.trim().length > 0) {
+					const newMessage = { message, sender };
+					lastMessage = message;
+					messageWebsocket.send(JSON.stringify(newMessage));
+				}
+			}, 200)();
+		});
+		
+		$('#app').on('input', '#sender', (event) => {
+			me = event.target.value;
+			render();
+		});
+		
+		messageWebsocket.onmessage = (event) => {
+			const message = JSON.parse(event.data);
+			messages.push(message);
+			render();
+		};
+	});
+	\end{lstlisting}
+	
+	\chapter{Build script}
+	\label{appendix:build}
+	
+	\begin{lstlisting}[numbers=left]
+	'use strict'
+	
+	const fs = require('fs-extra')
+	const path = require('path')
+	const mkdirp = require('mkdirp')
+	const webpack = require('webpack')
+	const ProgressBarPlugin = require('progress-bar-webpack-plugin')
+	
+	const buildPath = path.join(process.cwd(), 'build')
+	const publicPath = path.join(process.cwd(), 'public')
+	
+	mkdirp.sync(buildPath)
+	
+	const compiler = webpack({
+		entry: [
+			'./src/'
+		],
+		output: {
+			filename: 'bundle.js',
+			path: './public/'
+		},
+		devtool: 'source-map',
+		module: {
+			loaders: [
+				{
+					test: /\.js$/,
+					loader: 'babel',
+					query: {
+						presets: ['es2015']
+					},
+					exclude: /node_modules/
+				}
+			]
+		},
+		plugins: [
+			new ProgressBarPlugin(),
+			new webpack.optimize.UglifyJsPlugin({minimize: true})
+		]
+	})
+	
+	compiler.run((err, stats) => {
+		if (err) {
+			console.log(err)
+		} else {
+			fs.copySync(publicPath, buildPath)
+		}
+	})
+	\end{lstlisting}
+	
+	\chapter{Plato report for FRP implementation}
+	\label{appendix:plato-frp}
+	
+	\begin{lstlisting}[numbers=left]
+	{
+		"summary": {
+			"total": {
+				"eslint": 0,
+				"sloc": 58,
+				"maintainability": 82.635
+			},
+			"average": {
+				"sloc": 58,
+				"maintainability": "82.64",
+				"eslint": "0.00"
+			}
+		},
+		"reports": [
+			{
+				"info": {
+					"file": "frontend/frp-cyclejs/src/app.js",
+					"fileShort": "frontend/frp-cyclejs/src/app.js",
+					"fileSafe": "frontend_frp_cyclejs_src_app_js",
+					"link": "files/frontend_frp_cyclejs_src_app_js/index.html"
+				},
+				"eslint": {
+					"messages": 0
+				},
+				"complexity": {
+					"aggregate": {
+						"complexity": {
+							"cyclomatic": 3,
+							"cyclomaticDensity": 20,
+							"halstead": {
+								"bugs": 0.544,
+								"difficulty": 16.056,
+								"effort": 26200.817,
+								"length": 252,
+								"time": 1455.601,
+								"vocabulary": 89,
+								"volume": 1631.885,
+								"operands": {
+									"distinct": 72,
+									"total": 136,
+									"identifiers": [
+										"__stripped__"
+									]
+								},
+								"operators": {
+									"distinct": 17,
+									"total": 116,
+									"identifiers": [
+										"__stripped__"
+									]
+								}
+							},
+							"params": 11,
+							"sloc": {
+								"logical": 15,
+								"physical": 58
+							}
+						}
+					},
+					"module": "frontend/frp-cyclejs/src/app.js",
+					"maintainability": 82.635
+				}
+			}
+		]
+	}
+	\end{lstlisting}
+	
+	\chapter{Plato report for imperative programming implementation}
+	\label{appendix:plato-imp}
+	\begin{lstlisting}[numbers=left]
+	{
+		"summary": {
+			"total": {
+				"eslint": 0,
+				"sloc": 87,
+				"maintainability": 70.429
+			},
+			"average": {
+				"sloc": 87,
+				"maintainability": "70.43",
+				"eslint": "0.00"
+			}
+		},
+		"reports": [
+			{
+				"info": {
+					"file": "frontend/imperative/src/app.js",
+					"fileShort": "frontend/imperative/src/app.js",
+					"fileSafe": "frontend_imperative_src_app_js",
+					"link": "files/frontend_imperative_src_app_js/index.html"
+				},
+				"eslint": {
+					"messages": 0
+				},
+				"complexity": {
+					"aggregate": {
+						"complexity": {
+							"cyclomatic": 5,
+							"cyclomaticDensity": 12.821,
+							"halstead": {
+								"bugs": 0.524,
+								"difficulty": 22.632,
+								"effort": 35598.646,
+								"length": 251,
+								"time": 1977.703,
+								"vocabulary": 77,
+								"volume": 1572.963,
+								"operands": {
+									"distinct": 57,
+									"total": 129,
+									"identifiers": [
+										"__stripped__"
+									]
+								},
+								"operators": {
+									"distinct": 20,
+									"total": 122,
+									"identifiers": [
+										"__stripped__"
+									]
+								}
+							},
+							"params": 6,
+							"sloc": {
+								"logical": 39,
+								"physical": 87
+							}
+						}
+					},
+					"module": "frontend/imperative/src/app.js",
+					"maintainability": 70.429
+				}
+			}
+		]
+	}
+	\end{lstlisting}
+	
+	\chapter{Imperative frontend application logic (vanilla JavaScript)}
+	\label{appendix:vanilla}
+	
+	\begin{lstlisting}[numbers=left]
+	const senderEl = document.getElementById('sender');
+	const messageEl = document.getElementById('message');
+	const messageListEl = document.getElementById('chat');
+	const formEl = document.getElementById('form');
+	const messageWebsocket = new WebSocket('ws://localhost:8001');
+	const messages = [];
+	let me = '';
+	
+	const debounce = (func, wait) => {
+		let timeout;
+		return () => {
+			let context = this, args = arguments;
+			const later = () => {
+				timeout = null;
+				func.apply(context, args);
+			};
+		
+			clearTimeout(timeout);
+			timeout = setTimeout(later, wait);
+		};
+	};
+	
+	const createSenderAvatar = (sender) => {
+		const avatarImg = document.createElement('img');
+		avatarImg.classList.add('chat__entry__avatar');
+		avatarImg.src = `https://api.adorable.io/avatars/32/${sender}.svg`;
+		avatarImg.title = sender;
+		avatarImg.alt = sender;
+		
+		return avatarImg;
+	};
+	
+	const createMessageSpan = (message) => {
+		const messageSpan = document.createElement('span');
+		messageSpan.classList.add('chat__entry__message');
+		const messageText = document.createTextNode(message);
+		messageSpan.appendChild(messageText);
+		
+		return messageSpan;
+	};
+	
+	const createMessage = (message) => {
+		const messageLi = document.createElement('li');
+		const currentSender = senderEl.value;
+		const isMine = currentSender === message.sender;
+		const classes = isMine ? ['chat__entry', 'chat__entry--mine'] : ['chat__entry'];
+		messageLi.classList.add(...classes);
+		
+		if (!isMine) {
+			const avatarImg = createSenderAvatar(message.sender);
+			messageLi.appendChild(avatarImg);
+		}
+		
+		const messageSpan = createMessageSpan(message.message);
+		messageLi.appendChild(messageSpan);
+		return messageLi;
+	};
+		
+	const addMessage = (message) => {
+		const messageLi = createMessage(message);
+		messageListEl.appendChild(messageLi);
+	};
+	
+	const onSubmitDebounced = debounce((event) => {
+		const message = messageEl.value;
+		const sender = senderEl.value;
+		
+		if (message.trim().length > 0 && sender.trim().length > 0) {
+			const newMessage = { message, sender };
+			messageWebsocket.send(JSON.stringify(newMessage));
+		}
+	}, 200);
+	
+	formEl.addEventListener('submit', onSubmitDebounced);
+	formEl.addEventListener('submit', (event) => {
+		event.preventDefault();
+	});
+	
+	senderEl.addEventListener('input', (event) => {
+		const newSender = event.target.value;
+		const notMyMessagesIndexes = [];
+		const myMessagesIndexes = [];
+		
+		if (newSender.trim() !== me) {
+			for (let i = 0; i < messages.length; i++) {
+				const message = messages[i];
+				if (message.sender === me) {
+					const messageLi = messageListEl.childNodes.item(i);
+					messageLi.classList.remove('chat__entry--mine');
+					messageLi.insertBefore(createSenderAvatar(message.sender), messageLi.firstChild);
+				} else if (message.sender === newSender) {
+					const messageLi = messageListEl.childNodes.item(i);
+					messageLi.classList.add('chat__entry--mine');
+					messageLi.removeChild(messageLi.firstChild);
+				}
+			}
+		}
+		me = newSender.trim();
+	});
+	
+	messageWebsocket.addEventListener('message', (event) => {
+		const message = JSON.parse(event.data);
+		messages.push(message);
+		addMessage(message);
+	});
+	\end{lstlisting}
+	
+	\chapter{Plato report for vanilla JavaScript implementation}
+	\label{appendix:plato-vanilla}
+	
+	\begin{lstlisting}[numbers=left]
+	{
+		"summary": {
+			"total": {
+				"eslint": 0,
+				"sloc": 106,
+				"maintainability": 69.146
+			},
+			"average": {
+				"sloc": 106,
+				"maintainability": "69.15",
+				"eslint": "0.00"
+			}
+		},
+		"reports": [
+			{
+				"info": {
+					"file": "src/app.js",
+					"fileShort": "src/app.js",
+					"fileSafe": "src_app_js",
+					"link": "files/src_app_js/index.html"
+				},
+				"eslint": {
+					"messages": 0
+				},
+				"complexity": {
+					"aggregate": {
+						"complexity": {
+							"cyclomatic": 9,
+							"cyclomaticDensity": 11.538,
+							"halstead": {
+								"bugs": 1.062,
+								"difficulty": 33.103,
+								"effort": 105486.821,
+								"length": 469,
+								"time": 5860.379,
+								"vocabulary": 111,
+								"volume": 3186.581,
+								"operands": {
+									"distinct": 87,
+									"total": 240,
+									"identifiers": [
+										"__stripped__"
+									]
+								},
+								"operators": {
+									"distinct": 24,
+									"total": 229,
+									"identifiers": [
+										"__stripped__"
+									]
+								}
+							},
+							"params": 10,
+							"sloc": {
+								"logical": 78,
+								"physical": 106
+							}
+						}
+					},
+					"module": "src/app.js",
+					"maintainability": 69.146
+				}
+			}
+		]
+	}
+	\end{lstlisting}
+\end{appendices}

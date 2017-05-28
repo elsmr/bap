@@ -4,7 +4,7 @@
 
 % \include{titlepage}
 
-% \include{titlepage}
+% \includepdf{voorblad.pdf}
 
 \newpage\null\thispagestyle{empty}\newpage
 
@@ -12,7 +12,10 @@
 
 \includepdf{gegevens.pdf}
 
-\include{chapters/abstract}
+\setcounter{page}{1}
+\addtocontents{toc}{\protect\renewcommand{\protect\numberline}[1]{}}
+\includepdf[pagecommand={}, addtotoc={1,chapter,1,Abstract,abstract}]{abstract.pdf}
+\addtocontents{toc}{\let\protect\numberline\protect\oldnumberline}
 
 \include{chapters/woord-vooraf}
 
@@ -23,6 +26,7 @@
 \include{chapters/lijst-afkortingen}
 
 \newpage
+\setcounter{chapter}{0}
 
 % main content
 \include{chapters/voorstelling}
@@ -47,6 +51,6 @@
 \printbibliography[keyword={bib}]
 % end bibliography
 
-% \include{chapters/bijlagen}
+\include{chapters/bijlagen}
 
 \end{document}
