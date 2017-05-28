@@ -1,2 +1,2 @@
-# bap
-bap
+# Bachelor thesis
+> a.k.a. bachelorproef
